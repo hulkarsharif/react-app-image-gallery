@@ -14,10 +14,10 @@ class App extends React.Component {
         };
     }
     async componentDidMount() {
+        this.setState({
+            loading: true
+        });
         try {
-            this.setState({
-                loading: true
-            });
             const result = await ImageApi.fetchImages(this.state.page);
 
             this.setState({ images: result, loading: false });
@@ -25,15 +25,19 @@ class App extends React.Component {
             console.log(error);
         }
     }
-    loadMore = async () => {
+
+    componentDidUpdate(_, prevState) {
+        if (prevState.page !== this.state.page) {
+            this.fetchImages();
+        }
+    }
+
+    fetchImages = async () => {
         try {
-            this.setState({ loading: true });
-            const nextPage = this.state.page + 1;
-            const result = await ImageApi.fetchImages(nextPage);
+            const result = await ImageApi.fetchImages(this.state.page);
             this.setState((prevState) => {
                 return {
                     images: [...prevState.images, ...result],
-                    page: nextPage,
                     loading: false
                 };
             });
@@ -41,6 +45,32 @@ class App extends React.Component {
             console.log(error);
         }
     };
+
+    loadMore = () => {
+        this.setState((prevState) => {
+            return {
+                loading: true,
+                page: prevState.page + 1
+            };
+        });
+    };
+    // loadMore = async () => {
+    //     try {
+    //         this.setState(
+    //             (prevState) => {
+    //                 return {
+    //                     loading: true,
+    //                     page: prevState.page + 1
+    //                 };
+    //             },
+    //             () => {
+    //                 this.fetchImages();
+    //             }
+    //         );
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // };
 
     zoomInImage = (image) => {
         this.setState({
